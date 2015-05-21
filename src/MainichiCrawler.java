@@ -47,7 +47,6 @@ public class MainichiCrawler {
                 continue;
             } else {
                 // Process here
-                //MainichiURLWrapper document = new MainichiURLWrapper("http://mainichi.jp/select/news/20150520k0000m040158000c.html");
                 processDocument(document);
                 alreadyProcessedArticles.add(document.getFullURL());
             }
@@ -73,6 +72,8 @@ public class MainichiCrawler {
     }
 
     public void processDocument(MainichiURLWrapper document) {
+        System.out.println("Processing: " + document.getFullURL());
+
         ArrayList<MainichiURLWrapper> pages = new ArrayList<MainichiURLWrapper>();
 
         try {
@@ -87,7 +88,6 @@ public class MainichiCrawler {
             for(int i=0; i<pageLinks.size()-1; i++) { // Ignoring the last page returned was a concious decision to avoid ?????
                 MainichiURLWrapper anotherPage = new MainichiURLWrapper(document.getContext()+pageLinks.get(i).attr("href"));
                 pages.add(anotherPage);
-                System.out.println(anotherPage.getFullURL());
             }
 
 
@@ -109,12 +109,14 @@ public class MainichiCrawler {
                 jsonWriter.value(e.text().trim());
             }
             for(MainichiURLWrapper additionalPage : pages) {
+
                 try {
                     Document docPage = Jsoup.connect(additionalPage.getFullURL()).get();
                     Elements storyPage = docPage.select("div.NewsBody").first().select("p");
                     for(Element e : storyPage) {
                         jsonWriter.value(e.text().trim());
                     }
+                    System.out.println("\t\tProcessed additional page");
                 } catch (Exception e) {
                     System.out.println("Failed to get an additional page");
                     e.printStackTrace();
@@ -125,11 +127,11 @@ public class MainichiCrawler {
             jsonWriter.endArray();
             jsonWriter.endObject();
             jsonWriter.close();
-            System.out.println("Created new JSON document");
+            System.out.println("\tCreated JSON document: " + fileName+".json");
 
             Thread.sleep(500);
         } catch (Exception e) {
-
+            System.out.println("\tFailed to process article, possible paywall");
         }
 
     }
