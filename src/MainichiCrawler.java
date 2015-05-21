@@ -92,24 +92,24 @@ public class MainichiCrawler {
             JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+fileName+".json"),"UTF-8"));
 
             jsonWriter.beginObject();
-
             jsonWriter.name("title");
             jsonWriter.value(title.text());
-
             jsonWriter.name("link");
             jsonWriter.value(document.getFullURL());
-
             jsonWriter.name("datetimeInformation");
             jsonWriter.value(publishingInfo.text());
-
             jsonWriter.name("pages");
             jsonWriter.value(""+(pages.size()+1));
-
             jsonWriter.name("contents");
             jsonWriter.beginArray();
 
             for(Element e : storyPars) {
-                jsonWriter.value(e.text().trim());
+                String text = e.text();
+                if(text.charAt(0) == '\u3000') {
+                    jsonWriter.value(text.trim().substring(1));
+                } else {
+                    jsonWriter.value(text.trim());
+                }
             }
             for(MainichiURLWrapper additionalPage : pages) {
 
@@ -117,7 +117,12 @@ public class MainichiCrawler {
                     Document docPage = Jsoup.connect(additionalPage.getFullURL()).get();
                     Elements storyPage = docPage.select("div.NewsBody").first().select("p");
                     for(Element e : storyPage) {
-                        jsonWriter.value(e.text().trim());
+                        String text = e.text();
+                        if(text.charAt(0) == '\u3000') {
+                            jsonWriter.value(text.trim().substring(1));
+                        } else {
+                            jsonWriter.value(text.trim());
+                        }
                     }
                     System.out.println("\t\tProcessed additional page");
                 } catch (Exception e) {
@@ -126,13 +131,13 @@ public class MainichiCrawler {
                 }
             }
 
-
             jsonWriter.endArray();
             jsonWriter.endObject();
             jsonWriter.close();
             System.out.println("\tCreated JSON document: " + fileName+".json");
 
             Thread.sleep(500);
+
         } catch (Exception e) {
             System.out.println("\tFailed to process article, possible paywall");
         }
