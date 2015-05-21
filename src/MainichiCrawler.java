@@ -72,13 +72,12 @@ public class MainichiCrawler {
         return links;
     }
 
-    private static int docnum = 0;
-
     public void processDocument(MainichiURLWrapper document) {
         ArrayList<MainichiURLWrapper> pages = new ArrayList<MainichiURLWrapper>();
 
         try {
-            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+(docnum++)+".json"),"UTF-8"));
+            String fileName = document.getArticleIdentifier();
+            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+fileName+".json"),"UTF-8"));
             Document doc = Jsoup.connect(document.getFullURL()).get();
             Elements storyPars = doc.select("div.NewsBody").first().select("p");
             Element title = doc.select("h1.NewsTitle").first();
@@ -126,9 +125,8 @@ public class MainichiCrawler {
             jsonWriter.endArray();
             jsonWriter.endObject();
             jsonWriter.close();
-            System.out.println("Created new JSON document "+(docnum-1));
+            System.out.println("Created new JSON document");
         } catch (Exception e) {
-            docnum--;
         }
 
     }

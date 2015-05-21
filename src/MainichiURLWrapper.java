@@ -34,6 +34,10 @@ public class MainichiURLWrapper {
         return javaURL.getProtocol()+"://"+javaURL.getHost();
     }
 
+    public String getArticleIdentifier() {
+        return javaURL.getFile().substring(1,javaURL.getFile().indexOf(".html")).replace("/","-"); // Unique identifier filename for articles
+    }
+
     public String getProtocol() {
         return javaURL.getProtocol();
     }
