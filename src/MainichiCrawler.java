@@ -126,7 +126,10 @@ public class MainichiCrawler {
             jsonWriter.endObject();
             jsonWriter.close();
             System.out.println("Created new JSON document");
+
+            Thread.sleep(500);
         } catch (Exception e) {
+
         }
 
     }
