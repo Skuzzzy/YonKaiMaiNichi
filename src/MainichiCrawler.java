@@ -75,11 +75,26 @@ public class MainichiCrawler {
         System.out.println(docnum);
         JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream((docnum++)+".json"),"UTF-8"));
         Document doc = Jsoup.connect(document.getFullURL()).get();
-        Element story = doc.select("Div.NewsBody").first();
+        Element story = doc.select("div.NewsBody").first();
+        Element title = doc.select("h1.NewsTitle").first();
+        Element publishingInfo = doc.select("p.credit").first();
+
+        System.out.println(document.getFullURL());
+
         Elements pars = story.select("p");
 
         jsonWriter.beginObject();
-        jsonWriter.name(document.getFullURL());
+
+        jsonWriter.name("title");
+        jsonWriter.value(title.text());
+
+        jsonWriter.name("link");
+        jsonWriter.value(document.getFullURL());
+
+        jsonWriter.name("datetimeInformation");
+        jsonWriter.value(publishingInfo.text());
+
+        jsonWriter.name("contents");
         jsonWriter.beginArray();
 
         for(Element e : pars) {
