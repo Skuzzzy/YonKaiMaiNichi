@@ -30,6 +30,10 @@ public class MainichiURLWrapper {
         return javaURL.getProtocol()+"://"+javaURL.getHost()+javaURL.getPath();
     }
 
+    public String getContext() {
+        return javaURL.getProtocol()+"://"+javaURL.getHost();
+    }
+
     public String getProtocol() {
         return javaURL.getProtocol();
     }

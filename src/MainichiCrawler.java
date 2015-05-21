@@ -47,6 +47,7 @@ public class MainichiCrawler {
                 continue;
             } else {
                 // Process here
+                //MainichiURLWrapper document = new MainichiURLWrapper("http://mainichi.jp/select/news/20150520k0000m040158000c.html");
                 processDocument(document);
                 alreadyProcessedArticles.add(document.getFullURL());
             }
@@ -74,14 +75,22 @@ public class MainichiCrawler {
     private static int docnum = 0;
 
     public void processDocument(MainichiURLWrapper document) {
+        ArrayList<MainichiURLWrapper> pages = new ArrayList<MainichiURLWrapper>();
+
         try {
             JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+(docnum++)+".json"),"UTF-8"));
             Document doc = Jsoup.connect(document.getFullURL()).get();
-            Element story = doc.select("div.NewsBody").first();
+            Elements storyPars = doc.select("div.NewsBody").first().select("p");
             Element title = doc.select("h1.NewsTitle").first();
             Element publishingInfo = doc.select("p.credit").first();
+            Elements pageLinks = doc.select("ul.SearchPageWrap li a");
 
-            Elements pars = story.select("p");
+            for(int i=0; i<pageLinks.size()-1; i++) { // Ignoring the last page returned was a concious decision to avoid ?????
+                MainichiURLWrapper anotherPage = new MainichiURLWrapper(document.getContext()+pageLinks.get(i).attr("href"));
+                pages.add(anotherPage);
+                System.out.println(anotherPage.getFullURL());
+            }
+
 
             jsonWriter.beginObject();
 
@@ -97,9 +106,22 @@ public class MainichiCrawler {
             jsonWriter.name("contents");
             jsonWriter.beginArray();
 
-            for(Element e : pars) {
+            for(Element e : storyPars) {
                 jsonWriter.value(e.text().trim());
             }
+            for(MainichiURLWrapper additionalPage : pages) {
+                try {
+                    Document docPage = Jsoup.connect(additionalPage.getFullURL()).get();
+                    Elements storyPage = docPage.select("div.NewsBody").first().select("p");
+                    for(Element e : storyPage) {
+                        jsonWriter.value(e.text().trim());
+                    }
+                } catch (Exception e) {
+                    System.out.println("Failed to get an additional page");
+                    e.printStackTrace();
+                }
+            }
+
 
             jsonWriter.endArray();
             jsonWriter.endObject();
