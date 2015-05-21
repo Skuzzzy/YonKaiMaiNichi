@@ -40,12 +40,7 @@ public class MainichiCrawler {
                 continue;
             } else {
                 // Process here
-                try {
-                    processDocument(document);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+                processDocument(document);
                 alreadyProcessedArticles.add(document.getFullURL());
             }
         }
@@ -71,38 +66,43 @@ public class MainichiCrawler {
 
     private static int docnum = 0;
 
-    public void processDocument(MainichiURLWrapper document) throws Exception {
-        System.out.println(docnum);
-        JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream((docnum++)+".json"),"UTF-8"));
-        Document doc = Jsoup.connect(document.getFullURL()).get();
-        Element story = doc.select("div.NewsBody").first();
-        Element title = doc.select("h1.NewsTitle").first();
-        Element publishingInfo = doc.select("p.credit").first();
+    public void processDocument(MainichiURLWrapper document) {
+        try {
+            System.out.println(docnum);
+            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream((docnum++)+".json"),"UTF-8"));
+            Document doc = Jsoup.connect(document.getFullURL()).get();
+            Element story = doc.select("div.NewsBody").first();
+            Element title = doc.select("h1.NewsTitle").first();
+            Element publishingInfo = doc.select("p.credit").first();
 
-        System.out.println(document.getFullURL());
+            System.out.println(document.getFullURL());
 
-        Elements pars = story.select("p");
+            Elements pars = story.select("p");
 
-        jsonWriter.beginObject();
+            jsonWriter.beginObject();
 
-        jsonWriter.name("title");
-        jsonWriter.value(title.text());
+            jsonWriter.name("title");
+            jsonWriter.value(title.text());
 
-        jsonWriter.name("link");
-        jsonWriter.value(document.getFullURL());
+            jsonWriter.name("link");
+            jsonWriter.value(document.getFullURL());
 
-        jsonWriter.name("datetimeInformation");
-        jsonWriter.value(publishingInfo.text());
+            jsonWriter.name("datetimeInformation");
+            jsonWriter.value(publishingInfo.text());
 
-        jsonWriter.name("contents");
-        jsonWriter.beginArray();
+            jsonWriter.name("contents");
+            jsonWriter.beginArray();
 
-        for(Element e : pars) {
-            jsonWriter.value(e.text().trim());
+            for(Element e : pars) {
+                jsonWriter.value(e.text().trim());
+            }
+
+            jsonWriter.endArray();
+            jsonWriter.endObject();
+            jsonWriter.close();
+        } catch (Exception e) {
+            docnum--;
         }
 
-        jsonWriter.endArray();
-        jsonWriter.endObject();
-        jsonWriter.close();
     }
 }
