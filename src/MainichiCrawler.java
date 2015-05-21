@@ -13,11 +13,18 @@ import java.util.*;
  */
 public class MainichiCrawler {
     private String[] seedLinks = {
+            "http://mainichi.jp/",
             "http://mainichi.jp/select/shakai/",
             "http://mainichi.jp/select/seiji/",
             "http://mainichi.jp/select/biz/",
             "http://mainichi.jp/select/world/",
-            "http://mainichi.jp/select/science/"
+            "http://mainichi.jp/select/science/",
+
+            "http://mainichi.jp/sports/",
+            "http://mainichi.jp/enta/",
+            "http://mainichi.jp/culture/",
+            "http://mainichi.jp/life/"
+
     };
 
     private ArrayList<MainichiURLWrapper> articlesToProcess;
@@ -68,14 +75,11 @@ public class MainichiCrawler {
 
     public void processDocument(MainichiURLWrapper document) {
         try {
-            System.out.println(docnum);
-            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream((docnum++)+".json"),"UTF-8"));
+            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+(docnum++)+".json"),"UTF-8"));
             Document doc = Jsoup.connect(document.getFullURL()).get();
             Element story = doc.select("div.NewsBody").first();
             Element title = doc.select("h1.NewsTitle").first();
             Element publishingInfo = doc.select("p.credit").first();
-
-            System.out.println(document.getFullURL());
 
             Elements pars = story.select("p");
 
@@ -100,6 +104,7 @@ public class MainichiCrawler {
             jsonWriter.endArray();
             jsonWriter.endObject();
             jsonWriter.close();
+            System.out.println("Created new JSON document "+(docnum-1));
         } catch (Exception e) {
             docnum--;
         }
