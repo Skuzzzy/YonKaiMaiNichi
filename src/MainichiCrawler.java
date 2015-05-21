@@ -78,7 +78,6 @@ public class MainichiCrawler {
 
         try {
             String fileName = document.getArticleIdentifier();
-            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+fileName+".json"),"UTF-8"));
             Document doc = Jsoup.connect(document.getFullURL()).get();
             Elements storyPars = doc.select("div.NewsBody").first().select("p");
             Element title = doc.select("h1.NewsTitle").first();
@@ -90,6 +89,7 @@ public class MainichiCrawler {
                 pages.add(anotherPage);
             }
 
+            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(new FileOutputStream("output/"+fileName+".json"),"UTF-8"));
 
             jsonWriter.beginObject();
 
