@@ -102,6 +102,9 @@ public class MainichiCrawler {
             jsonWriter.name("datetimeInformation");
             jsonWriter.value(publishingInfo.text());
 
+            jsonWriter.name("pages");
+            jsonWriter.value(""+(pages.size()+1));
+
             jsonWriter.name("contents");
             jsonWriter.beginArray();
 
