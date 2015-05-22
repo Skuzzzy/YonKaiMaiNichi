@@ -67,7 +67,6 @@ public class MainichiCrawler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return links;
     }
 
@@ -105,24 +104,19 @@ public class MainichiCrawler {
 
             for(Element e : storyPars) {
                 String text = e.text();
-                if(text.charAt(0) == '\u3000') {
-                    jsonWriter.value(text.trim().substring(1));
-                } else {
-                    jsonWriter.value(text.trim());
-                }
+                text = JPStringTrim(text);
+                assert text.charAt(0) != '\u3000': "Whitespace at start of article passed through";
+                jsonWriter.value(text);
             }
             for(MainichiURLWrapper additionalPage : pages) {
-
                 try {
                     Document docPage = Jsoup.connect(additionalPage.getFullURL()).get();
                     Elements storyPage = docPage.select("div.NewsBody").first().select("p");
                     for(Element e : storyPage) {
                         String text = e.text();
-                        if(text.charAt(0) == '\u3000') {
-                            jsonWriter.value(text.trim().substring(1));
-                        } else {
-                            jsonWriter.value(text.trim());
-                        }
+                        text = JPStringTrim(text);
+                        assert text.charAt(0) != '\u3000': "Whitespace at start of article passed through";
+                        jsonWriter.value(text);
                     }
                     System.out.println("\t\tProcessed additional page");
                 } catch (Exception e) {
@@ -143,4 +137,15 @@ public class MainichiCrawler {
         }
 
     }
+
+    public String JPStringTrim(String JPString) {
+        if(JPString.charAt(0) == '\u3000') {
+            JPString = JPString.trim().substring(1);
+        } else {
+            JPString = JPString.trim();
+        }
+        return JPString;
+    }
+
+
 }
