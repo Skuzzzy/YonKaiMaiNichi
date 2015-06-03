@@ -1,8 +1,10 @@
 import com.google.gson.stream.JsonWriter;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jsoup.Connection.*;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -24,19 +26,42 @@ public class MainichiCrawler {
             "http://mainichi.jp/enta/",
             "http://mainichi.jp/culture/",
             "http://mainichi.jp/life/"
-
     };
 
     private ArrayList<MainichiURLWrapper> articlesToProcess;
 
     private HashSet<String> alreadyProcessedArticles;
 
+    Map<String, String> loginCookies;
+
     public MainichiCrawler() {
         articlesToProcess = new ArrayList<MainichiURLWrapper>();
         alreadyProcessedArticles = new HashSet<String>();
+        try {
+            Response res = Jsoup.connect("https://mainichi.jp/auth/receive_login.php?url=http%3A%2F%2Fmainichi.jp%2F&janrain_nonce=2015-05-22T20%3A12%3A13ZXmYQQa")
+                    .data("openid.ns","http://specs.openid.net/auth/2.0")
+                    .data("openid.ns.ext","https://auth.mainichi.co.jp/auth/ext/1.0")
+                    .data("openid.identity","http://specs.openid.net/auth/2.0/identifier_select")
+                    .data("openid.claimed_id","http://specs.openid.net/auth/2.0/identifier_select")
+                    .data("openid.mode", "checkid_setup")
+                    .data("openid.realm", "https://mainichi.jp/auth/")
+                    .data("openid.assoc_handle","f82be5ec7a8ec39b")
+                    .data("openid.return_to","https://mainichi.jp/auth/receive_login.php?url=http%3A%2F%2Fmainichi.jp%2F&janrain_nonce=2015-05-25T09%3A42%3A14ZAiO5er") // hmm
+                    .data("uidemail", "XXX@XXX.XXX")
+                    .data("password", "XXX")
+                    .data("persist", "1")
+                    .method(Method.POST)
+                    .execute();
+            loginCookies = res.cookies();
+            System.out.println(loginCookies.entrySet());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void run() {
+
         for(String seed : seedLinks) {
             MainichiURLWrapper currentURL = new MainichiURLWrapper(seed);
             articlesToProcess.addAll(getLinksFromURL(currentURL));
@@ -47,6 +72,7 @@ public class MainichiCrawler {
                 continue;
             } else {
                 // Process here
+                //MainichiURLWrapper documents = new MainichiURLWrapper("http://mainichi.jp/shimen/news/20140908dde012040002000c.html");
                 processDocument(document);
                 alreadyProcessedArticles.add(document.getFullURL());
             }
@@ -56,7 +82,7 @@ public class MainichiCrawler {
     private ArrayList<MainichiURLWrapper> getLinksFromURL(MainichiURLWrapper url) {
         ArrayList<MainichiURLWrapper> links = new ArrayList<MainichiURLWrapper>();
         try {
-            Document doc = Jsoup.connect(url.getFullURL()).get();
+            Document doc = Jsoup.connect(url.getFullURL()).cookies(loginCookies).post();
             Elements linkBlocks = doc.select("body a");
             for(Element linkB : linkBlocks) {
                 String extractedURL = linkB.attr("href");
@@ -77,7 +103,7 @@ public class MainichiCrawler {
 
         try {
             String fileName = document.getArticleIdentifier();
-            Document doc = Jsoup.connect(document.getFullURL()).get();
+            Document doc = Jsoup.connect(document.getFullURL()).cookies(loginCookies).post();
             Elements storyPars = doc.select("div.NewsBody").first().select("p");
             Element title = doc.select("h1.NewsTitle").first();
             Element publishingInfo = doc.select("p.credit").first();
@@ -110,7 +136,7 @@ public class MainichiCrawler {
             }
             for(MainichiURLWrapper additionalPage : pages) {
                 try {
-                    Document docPage = Jsoup.connect(additionalPage.getFullURL()).get();
+                    Document docPage = Jsoup.connect(additionalPage.getFullURL()).cookies(loginCookies).post();
                     Elements storyPage = docPage.select("div.NewsBody").first().select("p");
                     for(Element e : storyPage) {
                         String text = e.text();
@@ -130,7 +156,7 @@ public class MainichiCrawler {
             jsonWriter.close();
             System.out.println("\tCreated JSON document: " + fileName+".json");
 
-            Thread.sleep(500);
+            Thread.sleep(1000);
 
         } catch (Exception e) {
             System.out.println("\tFailed to process article, possible paywall");
