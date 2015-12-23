@@ -39,17 +39,6 @@ public class MainichiCrawler {
         alreadyProcessedArticles = new HashSet<String>();
         try {
             Response res = Jsoup.connect("https://mainichi.jp/auth/receive_login.php?url=http%3A%2F%2Fmainichi.jp%2F&janrain_nonce=2015-05-22T20%3A12%3A13ZXmYQQa")
-                    .data("openid.ns","http://specs.openid.net/auth/2.0")
-                    .data("openid.ns.ext","https://auth.mainichi.co.jp/auth/ext/1.0")
-                    .data("openid.identity","http://specs.openid.net/auth/2.0/identifier_select")
-                    .data("openid.claimed_id","http://specs.openid.net/auth/2.0/identifier_select")
-                    .data("openid.mode", "checkid_setup")
-                    .data("openid.realm", "https://mainichi.jp/auth/")
-                    .data("openid.assoc_handle","f82be5ec7a8ec39b")
-                    .data("openid.return_to","https://mainichi.jp/auth/receive_login.php?url=http%3A%2F%2Fmainichi.jp%2F&janrain_nonce=2015-05-25T09%3A42%3A14ZAiO5er") // hmm
-                    .data("uidemail", "XXX@XXX.XXX")
-                    .data("password", "XXX")
-                    .data("persist", "1")
                     .method(Method.POST)
                     .execute();
             loginCookies = res.cookies();
